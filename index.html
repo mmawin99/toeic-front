@@ -1,0 +1,102 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minimal Tableau API Landing</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#1fb6ff;--muted:#9aa8bd}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{display:grid;place-items:center;background:linear-gradient(180deg,#071125 0%,#081226 100%);color:#e6eef8}
+    .card{width:min(980px,94%);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));border-radius:12px;padding:28px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    header{display:flex;align-items:center;gap:16px}
+    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#7ef) ;display:grid;place-items:center;color:#042025;font-weight:700}
+    h1{font-size:1.25rem;margin:0}
+    p.lead{color:var(--muted);margin:8px 0 20px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .btn{background:var(--accent);color:#012;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    #vizContainer{height:560px;border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#07192a,#041424);display:grid;place-items:center;color:var(--muted)}
+    .small{font-size:0.9rem}
+    footer{margin-top:12px;color:var(--muted);font-size:0.85rem}
+    @media (max-width:640px){#vizContainer{height:420px}}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <header>
+      <div class="logo">T</div>
+      <div>
+        <h1>Minimal Tableau API landing</h1>
+        <p class="lead small">A tiny starting page to embed a Tableau visualization using the Tableau JavaScript API. Replace the <code>vizUrl</code> with your viz URL.</p>
+      </div>
+    </header>
+
+    <div class="controls">
+      <button class="btn" id="loadBtn">Load visualization</button>
+      <button class="btn ghost" id="destroyBtn">Destroy</button>
+      <div style="margin-left:auto;color:var(--muted);align-self:center" id="status">Not loaded</div>
+    </div>
+
+    <div id="vizContainer" aria-live="polite">
+      <!-- Viz will be embedded here -->
+      <div class="small">Click "Load visualization" to embed your Tableau viz.</div>
+    </div>
+
+    <footer>
+      Tip: use a Tableau Public or Tableau Server viz link. The example uses the official Tableau JS API.
+    </footer>
+  </div>
+
+  <!-- Tableau JS API - replace the src if you host the library yourself -->
+  <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+  <script>
+    // Replace this with your actual viz URL (tableau public or server)
+    const vizUrl = "https://public.tableau.com/views/RegionalSampleWorkbook/Storms"; // example, change me
+
+    const container = document.getElementById('vizContainer');
+    const loadBtn = document.getElementById('loadBtn');
+    const destroyBtn = document.getElementById('destroyBtn');
+    const status = document.getElementById('status');
+
+    let viz = null;
+
+    function setStatus(s){ status.textContent = s }
+
+    function loadViz(){
+      if(window.tableau === undefined){
+        setStatus('Tableau API not loaded');
+        return;
+      }
+      if(viz){ setStatus('Already loaded'); return }
+
+      setStatus('Loading...');
+      const options = {
+        hideTabs: true,
+        hideToolbar: false,
+        onFirstInteractive: function(){ setStatus('Interactive') }
+      };
+
+      try{
+        viz = new window.tableau.Viz(container, vizUrl, options);
+      }catch(e){
+        console.error(e);
+        setStatus('Failed to load');
+      }
+    }
+
+    function destroyViz(){
+      if(viz){ viz.dispose(); viz = null; setStatus('Destroyed'); container.innerHTML = '<div class="small">Click "Load visualization" to embed your Tableau viz.</div>' }
+      else setStatus('Nothing to destroy');
+    }
+
+    loadBtn.addEventListener('click', loadViz);
+    destroyBtn.addEventListener('click', destroyViz);
+
+    // Optional: auto-load on mobile or if you prefer
+    // loadViz();
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"bcb6a92060284d40b935edf017c398bf","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

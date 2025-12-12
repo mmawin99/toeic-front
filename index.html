@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC Vault Pro (Test process)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Bright & Colorful Palette */
+            --primary: #4f46e5;      /* Indigo */
+            --primary-light: #818cf8;
+            --secondary: #0ea5e9;    /* Sky Blue */
+            --accent: #f59e0b;       /* Amber */
+            --success: #10b981;      /* Emerald */
+            --danger: #ef4444;       /* Red */
+            --bg: #f0f9ff;           /* Very Light Blue */
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* --- Auth Screen --- */
+        #auth-screen {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
+        }
+        .auth-box {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 320px;
+            text-align: center;
+        }
+        .auth-box h2 { color: var(--primary); margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;
+            font-size: 1rem; outline: none; transition: 0.3s;
+            box-sizing: border-box;
+        }
+        .input-group input:focus { border-color: var(--primary); }
+
+        /* --- Main Layout --- */
+        .hidden { display: none !important; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px;
+        }
+        h1 { margin: 0; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn:hover { transform: translateY(-1px); filter: brightness(110%); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 15px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn {
+            background: white; padding: 12px 24px; border-radius: 30px; border: 2px solid transparent;
+            font-weight: bold; color: var(--text-muted); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+
+        /* Exam Grid */
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .exam-card {
+            background: white; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer;
+            border: 1px solid #f1f5f9;
+        }
+        .exam-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: var(--primary-light); }
+        .exam-card img { width: 100%; height: 160px; object-fit: cover; }
+        .card-body { padding: 15px; }
+        .card-body h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--text-main); }
+        .tag { display: inline-block; background: #e0e7ff; color: var(--primary); font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; margin-top: 5px; }
+
+        /* --- Exam Interface --- */
+        .exam-wrapper { display: grid; grid-template-columns: 280px 1fr; gap: 25px; align-items: start; position: relative; }
+        
+        /* Start Overlay */
+        #start-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 50;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 12px; backdrop-filter: blur(5px);
+        }
+        #start-overlay h2 { color: var(--text-main); font-size: 2rem; }
+
+        /* Sidebar */
+        .sidebar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-height: 85vh; overflow-y: auto; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .q-dot {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; border-radius: 6px; font-size: 0.85rem; cursor: pointer; color: var(--text-muted); font-weight: 600;
+        }
+        .q-dot:hover { background: #e2e8f0; }
+        .q-dot.active { border: 2px solid var(--primary); color: var(--primary); background: white; }
+        .q-dot.answered { background: var(--primary-light); color: white; }
+        .q-dot.correct { background: var(--success); color: white; }
+        .q-dot.wrong { background: var(--danger); color: white; }
+
+        /* Main Question Area */
+        .main-area { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); position: relative; min-height: 500px; }
+        
+        /* Top Bar: Timer & Controls */
+        .top-controls { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #f8fafc; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; 
+            border: 1px solid #e2e8f0;
+        }
+        .timer-box { font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .control-btn { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
+        .control-btn:hover { color: var(--primary); }
+
+        /* Audio Player Custom */
+        .audio-wrapper { background: #e0f2fe; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; border: 1px solid #bae6fd; }
+        .audio-controls { display: flex; gap: 10px; margin-top: 10px; }
+        .seek-btn { 
+            background: white; border: 1px solid #bae6fd; color: var(--secondary); 
+            padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; 
+        }
+        .seek-btn:hover { background: var(--secondary); color: white; }
+
+        /* Question Content */
+        .q-content img { max-width: 100%; border-radius: 8px; margin: 10px 0; border: 1px solid #e2e8f0; }
+        .q-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main); line-height: 1.5; }
+        
+        /* Choices */
+        .choice-btn {
+            display: block; width: 100%; text-align: left; padding: 18px 20px; margin: 10px 0;
+            background: white; border: 2px solid #f1f5f9; border-radius: 10px;
+            font-size: 1rem; cursor: pointer; transition: 0.2s; color: var(--text-main);
+        }
+        .choice-btn:hover { background: #f8fafc; border-color: var(--primary-light); }
+        .choice-btn.selected { background: #eef2ff; border-color: var(--primary); color: var(--primary); font-weight: 600; }
+        /* Review Mode Colors */
+        .choice-btn.r-correct { background: #ecfdf5; border-color: var(--success); color: #065f46; }
+        .choice-btn.r-wrong { background: #fef2f2; border-color: var(--danger); color: #991b1b; }
+
+        /* Navigation */
+        .nav-bar { display: flex; justify-content: space-between; margin-top: 30px; }
+
+        /* Explanation */
+        .explanation { 
+            margin-top: 25px; padding: 20px; background: #fffbeb; 
+            border-left: 5px solid var(--accent); border-radius: 4px; color: #92400e; 
+            display: none; line-height: 1.6;
+        }
+
+        /* --- Score Modal --- */
+        #score-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px);
+        }
+        .score-card {
+            background: white; width: 90%; max-width: 600px; padding: 30px;
+            border-radius: 20px; text-align: center; max-height: 90vh; overflow-y: auto;
+        }
+        .score-big { font-size: 3rem; font-weight: bold; color: var(--primary); margin: 10px 0; }
+        .chart-container { width: 250px; height: 250px; margin: 0 auto 20px auto; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; text-align: left; }
+        .stat-item { background: #f8fafc; padding: 15px; border-radius: 8px; }
+        .stat-label { font-size: 0.9rem; color: var(--text-muted); }
+        .stat-val { font-size: 1.2rem; font-weight: bold; color: var(--text-main); }
+        
+        /* Additional Review List */
+        .review-list { text-align: left; margin-top: 20px; display: none; }
+        .review-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .review-item.correct { color: var(--success); }
+        .review-item.wrong { color: var(--danger); }
+
+        @media (max-width: 768px) {
+            .exam-wrapper { grid-template-columns: 1fr; }
+            .sidebar { display: none; } /* Mobile hides sidebar */
+            .timer-box { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-box">
+            <h2><i class="fas fa-lock"></i> TOEIC Vault</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content: center;" onclick="app.login()">
+                Login <i class="fas fa-arrow-right"></i>
+            </button>
+            <p id="login-error" style="color:red; display:none; margin-top:10px;">Invalid Credentials</p>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden container">
+        
+        <header>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-layer-group" style="font-size:1.5rem; color:var(--primary);"></i>
+                <h1>TOEIC Vault Pro</h1>
+            </div>
+            <button class="btn btn-danger" onclick="app.logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </header>
+
+        <div id="dashboard-view">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="app.switchTab('full', this)">Full Exam</button>
+                <button class="tab-btn" onclick="app.switchTab('mini', this)">Mini Test</button>
+                <button class="tab-btn" onclick="app.switchTab('half_l', this)">Listening Only</button>
+                <button class="tab-btn" onclick="app.switchTab('half_r', this)">Reading Only</button>
+            </div>
+
+            <div id="loading" class="hidden" style="text-align:center; padding:40px; color:var(--text-muted);">
+                <i class="fas fa-spinner fa-spin fa-2x"></i><br>Fetching Data...
+            </div>
+
+            <div id="exam-list" class="exam-grid"></div>
+        </div>
+
+        <div id="exam-view" class="hidden">
+            <button class="btn btn-outline" onclick="app.backToDashboard()" style="margin-bottom:20px;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+
+            <div class="exam-wrapper">
+                
+                <div id="start-overlay">
+                    <h2>Ready?</h2>
+                    <p style="color:var(--text-muted); margin-bottom:20px;">
+                        Click Begin to start the timer <span id="audio-hint-text">and audio</span>.
+                    </p>
+                    <button class="btn btn-primary" style="padding: 15px 40px; font-size: 1.2rem;" onclick="app.beginExam()">
+                        <i class="fas fa-play"></i> BEGIN EXAM
+                    </button>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <h3>Progress</h3>
+                        <span id="progress-text" style="font-size:0.9rem; color:var(--text-muted);">0/200</span>
+                    </div>
+                    <div id="sidebar-grid" class="q-grid"></div>
+                    <div style="margin-top:20px; text-align:center;">
+                        <button class="btn btn-danger" style="width:100%; justify-content:center;" onclick="app.finishExam()">
+                            <i class="fas fa-check-circle"></i> Submit Exam
+                        </button>
+                    </div>
+                </div>
+
+                <div class="main-area">
+                    
+                    <div class="top-controls">
+                        <div class="timer-box">
+                            <i class="fas fa-stopwatch"></i>
+                            <span id="timer">00:00:00</span>
+                            <button id="pause-btn" class="control-btn" onclick="app.toggleTimer()">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                        </div>
+                        <span id="q-counter" style="font-weight:bold; color:var(--text-muted);">Q 1</span>
+                    </div>
+
+                    <div id="audio-container" class="audio-wrapper hidden">
+                        <audio id="main-audio" style="width:100%; height:30px;" controls></audio>
+                        <div class="audio-controls">
+                            <button class="seek-btn" onclick="app.seekAudio(-10)">-10s</button>
+                            <button class="seek-btn" onclick="app.seekAudio(-5)">-5s</button>
+                            <button class="seek-btn" onclick="app.seekAudio(5)">+5s</button>
+                            <button class="seek-btn" onclick="app.seekAudio(10)">+10s</button>
+                        </div>
+                    </div>
+
+                    <div class="q-content">
+                        <div id="q-images"></div>
+                        <div id="q-text" class="q-text"></div>
+                    </div>
+
+                    <div id="choices-container"></div>
+
+                    <div id="explanation-box" class="explanation"></div>
+
+                    <div class="nav-bar">
+                        <button class="btn btn-outline" onclick="app.prevQuestion()"><i class="fas fa-chevron-left"></i> Previous</button>
+                        <button class="btn btn-outline" onclick="app.nextQuestion()">Next <i class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="score-modal">
+        <div class="score-card">
+            <h2>Exam Results</h2>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+            
+            <div class="score-big"><span id="total-score">0</span> <span style="font-size:1rem; color:#999;">/ <span id="max-score">990</span></span></div>
+            
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Listening (Part 1-4)</div>
+                    <div class="stat-val" id="score-listening">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Reading (Part 5-7)</div>
+                    <div class="stat-val" id="score-reading">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Correct Answers</div>
+                    <div class="stat-val" id="count-correct">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Time Taken</div>
+                    <div class="stat-val" id="time-taken">00:00</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="app.toggleReviewList()">
+                <i class="fas fa-list"></i> View Detailed Answer Key
+            </button>
+            <div id="review-list" class="review-list"></div>
+
+            <br><br>
+            <button class="btn btn-outline" onclick="document.getElementById('score-modal').style.display='none'">Close & Review</button>
+            <button class="btn btn-danger" onclick="location.reload()">Exit</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG
+        const CREDENTIALS = { user: "admin", pass: "1234" }; 
+        const BASE_API = "https://t-api-pointer.mwn99.com";
+        const ENDPOINTS = {
+            full: "/testList/full.json",
+            mini: "/testList/mini.json",
+            half_l: "/testList/half_l.json",
+            half_r: "/testList/half_r.json"
+        };
+
+        // MD5 (Minified) for hashing titles
+        var md5=function(d){var r=function(d,l){var m=d[0],a=d[1],n=d[2],t=d[3];m=u(m,a,n,t,l[0],7,-680876936);t=u(t,m,a,n,l[1],12,-389564586);n=u(n,t,m,a,l[2],17,606105819);a=u(a,n,t,m,l[3],22,-1044525330);m=u(m,a,n,t,l[4],7,-176418897);t=u(t,m,a,n,l[5],12,1200080426);n=u(n,t,m,a,l[6],17,-1473231341);a=u(a,n,t,m,l[7],22,-45705983);m=u(m,a,n,t,l[8],7,1770035416);t=u(t,m,a,n,l[9],12,-1958414417);n=u(n,t,m,a,l[10],17,-42063);a=u(a,n,t,m,l[11],22,-1990404162);m=u(m,a,n,t,l[12],7,1804603682);t=u(t,m,a,n,l[13],12,-40341101);n=u(n,t,m,a,l[14],17,-1502002290);a=u(a,n,t,m,l[15],22,1236535329);m=c(m,a,n,t,l[1],5,-165796510);t=c(t,m,a,n,l[6],9,-1069501632);n=c(n,t,m,a,l[11],14,643717713);a=c(a,n,t,m,l[0],20,-373897302);m=c(m,a,n,t,l[5],5,-701558691);t=c(t,m,a,n,l[10],9,38016083);n=c(n,t,m,a,l[15],14,-660478335);a=c(a,n,t,m,l[4],20,-405537848);m=c(m,a,n,t,l[9],5,568446438);t=c(t,m,a,n,l[14],9,-1019803690);n=c(n,t,m,a,l[3],14,-187363961);a=c(a,n,t,m,l[8],20,1163531501);m=c(m,a,n,t,l[13],5,-1444681467);t=c(t,m,a,n,l[2],9,-51403784);n=c(n,t,m,a,l[7],14,1735328473);a=c(a,n,t,m,l[12],20,-1926607734);m=o(m,a,n,t,l[5],4,-378558);t=o(t,m,a,n,l[8],11,-2022574463);n=o(n,t,m,a,l[11],16,1839030562);a=o(a,n,t,m,l[14],23,-35309556);m=o(m,a,n,t,l[1],4,-1530992060);t=o(t,m,a,n,l[4],11,1272855582);n=o(n,t,m,a,l[7],16,-1544279593);a=o(a,n,t,m,l[10],23,-1094730640);m=o(m,a,n,t,l[13],4,681279174);t=o(t,m,a,n,l[0],11,-358537222);n=o(n,t,m,a,l[3],16,-722521979);a=o(a,n,t,m,l[6],23,76029189);m=o(m,a,n,t,l[9],4,-640364487);t=o(t,m,a,n,l[12],11,-421815835);n=o(n,t,m,a,l[15],16,530742520);a=o(a,n,t,m,l[2],23,-995338651);m=f(m,a,n,t,l[0],6,-198630844);t=f(t,m,a,n,l[7],10,1126891415);n=f(n,t,m,a,l[14],15,-1416354905);a=f(a,n,t,m,l[5],21,-57434055);m=f(m,a,n,t,l[12],6,1700485571);t=f(t,m,a,n,l[3],10,-1894986606);n=f(n,t,m,a,l[10],15,-1051523);a=f(a,n,t,m,l[1],21,-2054922799);m=f(m,a,n,t,l[8],6,1873313359);t=f(t,m,a,n,l[15],10,-30611744);n=f(n,t,m,a,l[6],15,-1560198380);a=f(a,n,t,m,l[13],21,1309151649);m=f(m,a,n,t,l[4],6,-145523070);t=f(t,m,a,n,l[11],10,-1120210379);n=f(n,t,m,a,l[2],15,718787259);a=f(a,n,t,m,l[9],21,-343485551);return[m,a,n,t]},u=function(d,r,l,m,a,n,t){return e(r&l|~r&m,d,r,a,n,t)},c=function(d,r,l,m,a,n,t){return e(r&m|l&~m,d,r,a,n,t)},o=function(d,r,l,m,a,n,t){return e(r^l^m,d,r,a,n,t)},f=function(d,r,l,m,a,n,t){return e(l^(r|~m),d,r,a,n,t)},e=function(d,r,l,m,a,n){return r=r+((d=d+(r=r+l|0)+m|0)<<n|d>>>32-n),r=r+a|0},l=function(d){var r,l=d.length,m=[1732584193,-271733879,-1732584194,271733878],a=64;for(d[l++]=128;l%64!=56;)d[l++]=0;for(l+=8,r=0;r<l;r+=a){var n=m[0],t=m[1],u=m[2],c=m[3];m=md5(Array.prototype.slice.call(d,r,r+a),m),m[0]=m[0]+n|0,m[1]=m[1]+t|0,m[2]=m[2]+u|0,m[3]=m[3]+c|0}return m},m=function(d){var r,l=[],m="";for(r=0;r<32*d.length;r+=8)m+=String.fromCharCode(d[r>>5]>>>r%32&255);return m},a=function(d){var r,l=[];for(r=0;r<d.length;r++)l.push(d.charCodeAt(r));return l},n=function(d){var r,l,m="0123456789abcdef",a="";for(l=0;l<d.length;l++)r=d.charCodeAt(l),a+=m.charAt(r>>>4&15)+m.charAt(r&15);return a};return function(d){return n(m(l(a(function(d){return unescape(encodeURIComponent(d))}(d)))))}};
+
+        const app = {
+            state: {
+                tab: 'full',
+                questions: [],
+                examData: null,
+                currentIndex: 0,
+                answers: {},
+                examId: null,
+                isFinished: false,
+                audioPath: null,
+                timerSeconds: 0,
+                timerInterval: null,
+                isPaused: false
+            },
+
+            // --- AUTH ---
+            init: () => {
+                if (localStorage.getItem('toeic_auth') === 'true') {
+                    app.showApp();
+                }
+            },
+            login: () => {
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+                if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
+                    localStorage.setItem('toeic_auth', 'true');
+                    app.showApp();
+                } else {
+                    document.getElementById('login-error').style.display = 'block';
+                }
+            },
+            logout: () => {
+                localStorage.removeItem('toeic_auth');
+                location.reload();
+            },
+            showApp: () => {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-screen').classList.remove('hidden');
+                app.fetchList('full');
+            },
+
+            // --- DATA FETCHING ---
+            switchTab: (type, btn) => {
+                app.state.tab = type;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                app.fetchList(type);
+            },
+            fetchList: async (type) => {
+                const grid = document.getElementById('exam-list');
+                const loading = document.getElementById('loading');
+                grid.innerHTML = '';
+                loading.classList.remove('hidden');
+
+                try {
+                    const res = await fetch(BASE_API + ENDPOINTS[type]);
+                    const data = await res.json();
+                    
+                    data.forEach(exam => {
+                        const card = document.createElement('div');
+                        card.className = 'exam-card';
+                        const img = (exam.book_cover_path && exam.book_cover_path[0]) 
+                            ? BASE_API + exam.book_cover_path[0] 
+                            : 'https://via.placeholder.com/300x160?text=No+Cover';
+
+                        card.innerHTML = `
+                            <img src="${img}" loading="lazy">
+                            <div class="card-body">
+                                <h3>${exam.title}</h3>
+                                <span class="tag"><i class="fas fa-question-circle"></i> ${exam.total_questions} Questions</span>
+                                <span class="tag"><i class="fas fa-id-card"></i> ${exam.test_group_id}</span>
+                            </div>
+                        `;
+                        card.onclick = () => app.loadExam(exam, type);
+                        grid.appendChild(card);
+                    });
+                } catch (e) {
+                    grid.innerHTML = '<p style="color:red">Failed to load exam list.</p>';
+                } finally {
+                    loading.classList.add('hidden');
+                }
+            },
+            loadExam: async (meta, type) => {
+                const hashed = md5(meta.title);
+                const url = `${BASE_API}/output/${type}-${hashed}-question.json`;
+                
+                document.getElementById('loading').classList.remove('hidden');
+                try {
+                    const res = await fetch(url);
+                    if(!res.ok) throw new Error("File not found");
+                    const data = await res.json();
+                    app.setupExam(data, type, meta.test_group_id);
+                } catch(e) {
+                    alert("Error: " + e.message);
+                } finally {
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            },
+
+            // --- EXAM LOGIC ---
+            setupExam: (data, type, id) => {
+                app.state.examData = data;
+                app.state.examId = id;
+                app.state.isFinished = false;
+                app.state.timerSeconds = 0;
+                app.state.isPaused = true;
+                clearInterval(app.state.timerInterval);
+
+                // Flatten Questions
+                let flat = [];
+                if (Array.isArray(data.questions)) {
+                    data.questions.forEach(g => {
+                        if(Array.isArray(g)) g.forEach(q => flat.push(q));
+                        else flat.push(g);
+                    });
+                }
+                app.state.questions = flat;
+
+                // Audio Logic
+                app.state.audioPath = (data.audio && data.audio.length > 0) ? BASE_API + data.audio[0] : null;
+
+                // Load Save
+                const saved = localStorage.getItem(`toeic_ans_${id}`);
+                app.state.answers = saved ? JSON.parse(saved) : {};
+
+                // UI
+                document.getElementById('dashboard-view').classList.add('hidden');
+                document.getElementById('exam-view').classList.remove('hidden');
+                
+                // Overlay Setup
+                const overlay = document.getElementById('start-overlay');
+                overlay.style.display = 'flex';
+                document.getElementById('audio-hint-text').style.display = app.state.audioPath ? 'inline' : 'none';
+
+                app.renderSidebar();
+            },
+
+            beginExam: () => {
+                document.getElementById('start-overlay').style.display = 'none';
+                
+                // Audio Init
+                const player = document.getElementById('main-audio');
+                if (app.state.audioPath && app.state.tab !== 'half_r') {
+                    player.src = app.state.audioPath;
+                    // Play audio, but catch browsers blocking auto-play without interaction (though click solves it)
+                    player.play().catch(e => console.log("Autoplay blocked", e));
+                }
+
+                app.state.isPaused = false;
+                app.startTimer();
+                
+                // Find first empty question or 0
+                const first = app.state.questions.findIndex(q => !app.state.answers[q.question_id]);
+                app.jumpToQuestion(first > -1 ? first : 0);
+            },
+
+            // --- TIMER & AUDIO CONTROLS ---
+            startTimer: () => {
+                clearInterval(app.state.timerInterval);
+                app.state.timerInterval = setInterval(() => {
+                    if (!app.state.isPaused) {
+                        app.state.timerSeconds++;
+                        app.updateTimerUI();
+                    }
+                }, 1000);
+            },
+            toggleTimer: () => {
+                app.state.isPaused = !app.state.isPaused;
+                const btn = document.getElementById('pause-btn');
+                const player = document.getElementById('main-audio');
+                
+                if(app.state.isPaused) {
+                    btn.innerHTML = '<i class="fas fa-play"></i>';
+                    if(!player.paused) player.pause();
+                } else {
+                    btn.innerHTML = '<i class="fas fa-pause"></i>';
+                    // Resume audio if it was playing or applicable?
+                    // Usually we don't auto-resume audio to avoid confusion, user manually resumes.
+                }
+            },
+            updateTimerUI: () => {
+                const s = app.state.timerSeconds;
+                const hrs = Math.floor(s / 3600).toString().padStart(2,'0');
+                const min = Math.floor((s % 3600) / 60).toString().padStart(2,'0');
+                const sec = (s % 60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${hrs}:${min}:${sec}`;
+            },
+            seekAudio: (seconds) => {
+                const player = document.getElementById('main-audio');
+                if(player) player.currentTime += seconds;
+            },
+
+            // --- NAVIGATION ---
+            renderSidebar: () => {
+                const grid = document.getElementById('sidebar-grid');
+                grid.innerHTML = '';
+                app.state.questions.forEach((q, idx) => {
+                    const dot = document.createElement('div');
+                    dot.className = `q-dot ${app.state.answers[q.question_id] ? 'answered' : ''}`;
+                    dot.innerText = q.question_no;
+                    dot.id = `dot-${idx}`;
+                    dot.onclick = () => app.jumpToQuestion(idx);
+                    grid.appendChild(dot);
+                });
+                app.updateProgress();
+            },
+            updateProgress: () => {
+                const answered = Object.keys(app.state.answers).length;
+                const total = app.state.questions.length;
+                document.getElementById('progress-text').innerText = `${answered}/${total}`;
+            },
+            jumpToQuestion: (idx) => {
+                if(idx < 0 || idx >= app.state.questions.length) return;
+                app.state.currentIndex = idx;
+                const q = app.state.questions[idx];
+
+                // Active State Sidebar
+                document.querySelectorAll('.q-dot').forEach(d => d.classList.remove('active'));
+                const dot = document.getElementById(`dot-${idx}`);
+                if(dot) {
+                    dot.classList.add('active');
+                    dot.scrollIntoView({behavior: "smooth", block: "center"});
+                }
+
+                document.getElementById('q-counter').innerText = `Question ${q.question_no} / ${app.state.questions.length}`;
+
+                // Render Content
+                const imgBox = document.getElementById('q-images');
+                imgBox.innerHTML = '';
+                if (q.image && q.image.length) {
+                    q.image.forEach(path => {
+                        imgBox.innerHTML += `<img src="${BASE_API + path}">`;
+                    });
+                }
+                
+                document.getElementById('q-text').innerText = q.questionText || "Select the best answer:";
+
+                // Render Choices
+                const box = document.getElementById('choices-container');
+                box.innerHTML = '';
+                ['A','B','C','D'].forEach(opt => {
+                    if(!q.choices[opt]) return;
+                    const btn = document.createElement('button');
+                    const userVal = app.state.answers[q.question_id];
+                    
+                    let className = `choice-btn`;
+                    if(userVal === opt) className += ' selected';
+                    
+                    // Review Mode Logic
+                    if(app.state.isFinished) {
+                        if(opt === q.correctAnswer) className += ' r-correct';
+                        else if(userVal === opt && opt !== q.correctAnswer) className += ' r-wrong';
+                    }
+
+                    btn.className = className;
+                    btn.innerHTML = `<b>${opt}.</b> ${q.choices[opt]}`;
+                    
+                    if(!app.state.isFinished) {
+                        btn.onclick = () => app.selectAnswer(q.question_id, opt, idx);
+                    }
+                    box.appendChild(btn);
+                });
+
+                // Explanation
+                const expBox = document.getElementById('explanation-box');
+                if(app.state.isFinished) {
+                    expBox.style.display = 'block';
+                    expBox.innerHTML = `<strong>Explanation:</strong><br>${q.explanation || 'No explanation.'}`;
+                } else {
+                    expBox.style.display = 'none';
+                }
+
+                // Audio Visibility Logic
+                app.handleAudioDisplay(q.question_no);
+            },
+
+            handleAudioDisplay: (qNo) => {
+                const container = document.getElementById('audio-container');
+                const player = document.getElementById('main-audio');
+                const type = app.state.tab;
+                
+                let show = false;
+                if(!app.state.audioPath || type === 'half_r') show = false;
+                else if (type === 'mini' || type === 'half_l') show = true;
+                else if (type === 'full') show = (qNo <= 100);
+
+                if(show) {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                    // Optional: Pause audio if moving to Reading section?
+                    if(!player.paused && type === 'full' && qNo > 100) player.pause();
+                }
+            },
+
+            selectAnswer: (qId, opt, idx) => {
+                app.state.answers[qId] = opt;
+                localStorage.setItem(`toeic_ans_${app.state.examId}`, JSON.stringify(app.state.answers));
+                document.getElementById(`dot-${idx}`).classList.add('answered');
+                app.updateProgress();
+                app.jumpToQuestion(idx); // Refresh UI
+            },
+
+            nextQuestion: () => app.jumpToQuestion(app.state.currentIndex + 1),
+            prevQuestion: () => app.jumpToQuestion(app.state.currentIndex - 1),
+            backToDashboard: () => {
+                if(confirm("Exit exam? Progress saved.")) {
+                    document.getElementById('exam-view').classList.add('hidden');
+                    document.getElementById('dashboard-view').classList.remove('hidden');
+                    document.getElementById('main-audio').pause();
+                    clearInterval(app.state.timerInterval);
+                }
+            },
+
+            // --- FINISH & SCORE ---
+            finishExam: () => {
+                if(!confirm("Submit answers and calculate score?")) return;
+                
+                app.state.isFinished = true;
+                clearInterval(app.state.timerInterval);
+                document.getElementById('main-audio').pause();
+
+                let correct = 0;
+                let listeningCorrect = 0;
+                let readingCorrect = 0;
+                let reviewHtml = "";
+
+                // Categorize for Scoring
+                // Standard TOEIC: Part 1-4 (Q1-100) = Listening, Part 5-7 (Q101-200) = Reading
+                // Since this system supports Mini/Half, we approximate based on ranges.
+
+                app.state.questions.forEach((q, i) => {
+                    const u = app.state.answers[q.question_id];
+                    const isCorrect = (u === q.correctAnswer);
+                    const qNum = parseInt(q.question_no);
+
+                    if(isCorrect) {
+                        correct++;
+                        if(qNum <= 100) listeningCorrect++;
+                        else readingCorrect++;
+                    }
+
+                    // Update Sidebar
+                    const dot = document.getElementById(`dot-${i}`);
+                    dot.classList.remove('answered');
+                    dot.classList.add(isCorrect ? 'correct' : 'wrong');
+
+                    // Build Review List
+                    reviewHtml += `
+                        <div class="review-item ${isCorrect ? 'correct' : 'wrong'}">
+                            <span>Q${qNum}</span>
+                            <span>Your: ${u || '-'} | Ans: ${q.correctAnswer}</span>
+                        </div>
+                    `;
+                });
+
+                // Calculate Score (5 pts logic)
+                let totalScore = 0;
+                let maxScore = 0;
+
+                const totalQ = app.state.questions.length;
+                const rawScore = correct * 5;
+
+                if (app.state.tab === 'full') {
+                    totalScore = Math.min(rawScore, 990);
+                    maxScore = 990;
+                } else if (app.state.tab === 'half_l' || app.state.tab === 'half_r') {
+                    totalScore = Math.min(rawScore, 495);
+                    maxScore = 495;
+                } else {
+                    // Mini
+                    totalScore = rawScore;
+                    maxScore = totalQ * 5;
+                }
+
+                // Stats
+                const lTotal = app.state.questions.filter(q => q.question_no <= 100).length || 1;
+                const rTotal = app.state.questions.filter(q => q.question_no > 100).length || 1;
+                const lPercent = Math.round((listeningCorrect / lTotal) * 100);
+                const rPercent = Math.round((readingCorrect / rTotal) * 100);
+
+                // Populate Modal
+                document.getElementById('total-score').innerText = totalScore;
+                document.getElementById('max-score').innerText = maxScore;
+                document.getElementById('score-listening').innerText = `${lPercent}% (${listeningCorrect}/${lTotal})`;
+                document.getElementById('score-reading').innerText = `${rPercent}% (${readingCorrect}/${rTotal})`;
+                document.getElementById('count-correct').innerText = `${correct} / ${totalQ}`;
+                document.getElementById('time-taken').innerText = document.getElementById('timer').innerText;
+                document.getElementById('review-list').innerHTML = reviewHtml;
+
+                // Chart
+                app.renderChart(correct, totalQ - correct);
+
+                // Show Modal & Refresh View
+                document.getElementById('score-modal').style.display = 'flex';
+                app.jumpToQuestion(app.state.currentIndex);
+            },
+
+            renderChart: (correct, wrong) => {
+                const ctx = document.getElementById('scoreChart').getContext('2d');
+                if(window.myChart) window.myChart.destroy();
+                
+                window.myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Correct', 'Incorrect'],
+                        datasets: [{
+                            data: [correct, wrong],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            },
+            
+            toggleReviewList: () => {
+                const list = document.getElementById('review-list');
+                list.style.display = (list.style.display === 'block') ? 'none' : 'block';
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>

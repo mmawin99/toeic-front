@@ -1,102 +1,186 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Minimal Tableau API Landing</title>
-  <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#1fb6ff;--muted:#9aa8bd}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    body{display:grid;place-items:center;background:linear-gradient(180deg,#071125 0%,#081226 100%);color:#e6eef8}
-    .card{width:min(980px,94%);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));border-radius:12px;padding:28px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
-    header{display:flex;align-items:center;gap:16px}
-    .logo{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#7ef) ;display:grid;place-items:center;color:#042025;font-weight:700}
-    h1{font-size:1.25rem;margin:0}
-    p.lead{color:var(--muted);margin:8px 0 20px}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-    .btn{background:var(--accent);color:#012;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-    #vizContainer{height:560px;border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#07192a,#041424);display:grid;place-items:center;color:var(--muted)}
-    .small{font-size:0.9rem}
-    footer{margin-top:12px;color:var(--muted);font-size:0.85rem}
-    @media (max-width:640px){#vizContainer{height:420px}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - API Endpoint Not Found</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --card-bg: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin: 0;
+            color: var(--accent-color);
+            letter-spacing: -2px;
+        }
+
+        h2 {
+            margin-top: 0.5rem;
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .meme-container {
+            margin: 2rem 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            max-height: 500px;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+
+        img.loaded {
+            opacity: 1;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .loader {
+            position: absolute;
+            color: var(--accent-color);
+            font-family: monospace;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        
+        .code-snippet {
+            font-family: monospace;
+            background: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #ff79c6;
+        }
+    </style>
 </head>
 <body>
-  <div class="card" role="main">
-    <header>
-      <div class="logo">T</div>
-      <div>
-        <h1>Minimal Tableau API landing</h1>
-        <p class="lead small">A tiny starting page to embed a Tableau visualization using the Tableau JavaScript API. Replace the <code>vizUrl</code> with your viz URL.</p>
-      </div>
-    </header>
 
-    <div class="controls">
-      <button class="btn" id="loadBtn">Load visualization</button>
-      <button class="btn ghost" id="destroyBtn">Destroy</button>
-      <div style="margin-left:auto;color:var(--muted);align-self:center" id="status">Not loaded</div>
+    <div class="container">
+        <h1>404</h1>
+        <h2>Endpoint not found. Have a meme instead.</h2>
+        
+        <div class="meme-container">
+            <div class="loader" id="loader">Fetching meme...</div>
+            <img id="meme-img" alt="Programming Meme" />
+        </div>
+
+        <p style="margin-bottom: 20px; font-size: 0.9rem; color: #64748b;">
+            This API endpoint (<span id="path" class="code-snippet">/</span>) does not exist.
+        </p>
+
+        <button class="btn" onclick="fetchMeme()">Refresh Meme</button>
     </div>
 
-    <div id="vizContainer" aria-live="polite">
-      <!-- Viz will be embedded here -->
-      <div class="small">Click "Load visualization" to embed your Tableau viz.</div>
-    </div>
+    <script>
+        // Update the path display
+        document.getElementById('path').innerText = window.location.pathname;
 
-    <footer>
-      Tip: use a Tableau Public or Tableau Server viz link. The example uses the official Tableau JS API.
-    </footer>
-  </div>
+        const imgElement = document.getElementById('meme-img');
+        const loader = document.getElementById('loader');
 
-  <!-- Tableau JS API - replace the src if you host the library yourself -->
-  <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
-  <script>
-    // Replace this with your actual viz URL (tableau public or server)
-    const vizUrl = "https://public.tableau.com/views/RegionalSampleWorkbook/Storms"; // example, change me
+        // Using a public API that scrapes r/programmerhumor
+        const API_URL = 'https://meme-api.com/gimme/programmerhumor';
 
-    const container = document.getElementById('vizContainer');
-    const loadBtn = document.getElementById('loadBtn');
-    const destroyBtn = document.getElementById('destroyBtn');
-    const status = document.getElementById('status');
+        // Fallback memes in case the API is down or hits rate limits
+        const FALLBACK_MEMES = [
+            "https://i.imgflip.com/2/1bij.jpg", // One does not simply
+            "https://i.redd.it/36t1g393v5j51.jpg", // It works on my machine
+            "https://i.imgflip.com/2/3vze.jpg" // Aliens
+        ];
 
-    let viz = null;
+        async function fetchMeme() {
+            // Reset UI
+            imgElement.classList.remove('loaded');
+            loader.style.display = 'block';
 
-    function setStatus(s){ status.textContent = s }
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                
+                // Preload image before showing
+                const tempImg = new Image();
+                tempImg.src = data.url;
+                tempImg.onload = () => {
+                    imgElement.src = data.url;
+                    imgElement.alt = data.title;
+                    loader.style.display = 'none';
+                    imgElement.classList.add('loaded');
+                };
 
-    function loadViz(){
-      if(window.tableau === undefined){
-        setStatus('Tableau API not loaded');
-        return;
-      }
-      if(viz){ setStatus('Already loaded'); return }
+            } catch (error) {
+                console.error('API failed, using fallback:', error);
+                // Use a random fallback
+                const randomFallback = FALLBACK_MEMES[Math.floor(Math.random() * FALLBACK_MEMES.length)];
+                imgElement.src = randomFallback;
+                loader.style.display = 'none';
+                imgElement.classList.add('loaded');
+            }
+        }
 
-      setStatus('Loading...');
-      const options = {
-        hideTabs: true,
-        hideToolbar: false,
-        onFirstInteractive: function(){ setStatus('Interactive') }
-      };
-
-      try{
-        viz = new window.tableau.Viz(container, vizUrl, options);
-      }catch(e){
-        console.error(e);
-        setStatus('Failed to load');
-      }
-    }
-
-    function destroyViz(){
-      if(viz){ viz.dispose(); viz = null; setStatus('Destroyed'); container.innerHTML = '<div class="small">Click "Load visualization" to embed your Tableau viz.</div>' }
-      else setStatus('Nothing to destroy');
-    }
-
-    loadBtn.addEventListener('click', loadViz);
-    destroyBtn.addEventListener('click', destroyViz);
-
-    // Optional: auto-load on mobile or if you prefer
-    // loadViz();
-  </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"bcb6a92060284d40b935edf017c398bf","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+        // Load initial meme
+        fetchMeme();
+    </script>
 </body>
 </html>
